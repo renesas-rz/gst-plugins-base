@@ -31,6 +31,7 @@
 #include "gstplaysink.h"
 #include "gstsubtitleoverlay.h"
 #include "gststreamsynchronizer.h"
+#include "gstfilterconfig.h"
 
 static gboolean
 plugin_init (GstPlugin * plugin)
@@ -54,6 +55,8 @@ plugin_init (GstPlugin * plugin)
     else
       res = gst_play_bin2_plugin_init (plugin);
   }
+
+  gst_filter_get_vfilter_config_file ();
 
   res &= gst_play_bin3_plugin_init (plugin, FALSE);
   res &= gst_play_sink_plugin_init (plugin);

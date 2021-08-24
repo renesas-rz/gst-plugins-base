@@ -15,7 +15,8 @@ playback_sources = [
   'gstplaysinkvideoconvert.c',
   'gstplaysinkaudioconvert.c',
   'gstplaysinkconvertbin.c',
-  'gststreamsynchronizer.c'
+  'gststreamsynchronizer.c',
+  'gstfilterconfig.c',
 ]
 
 gstplayback = library('gstplayback',
