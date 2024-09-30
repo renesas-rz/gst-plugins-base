@@ -45,6 +45,7 @@
 #include <gst/pbutils/missing-plugins.h>
 #include <gst/video/video.h>
 #include <string.h>
+#include "gstfilterconfig.h"
 
 GST_DEBUG_CATEGORY_STATIC (subtitle_overlay_debug);
 #define GST_CAT_DEFAULT subtitle_overlay_debug
@@ -610,6 +611,11 @@ _create_element (GstSubtitleOverlay * self, GstElement ** element,
 
   gst_element_sync_state_with_parent (elt);
   *element = elt;
+
+  if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT (elt)),
+      "dmabuf-use"))
+    g_object_set (G_OBJECT(elt), "dmabuf-use", TRUE, NULL);
+
   return TRUE;
 }
 
@@ -871,7 +877,7 @@ _link_renderer (GstSubtitleOverlay * self, GstElement * renderer,
     if (!is_hw) {
       /* First link everything internally */
       if (G_UNLIKELY (!_create_element (self, &self->post_colorspace,
-                  COLORSPACE, NULL, "post-colorspace", FALSE))) {
+                  vfilter_name, NULL, "post-colorspace", FALSE))) {
         return FALSE;
       }
       src = gst_element_get_static_pad (renderer, "src");
@@ -882,13 +888,13 @@ _link_renderer (GstSubtitleOverlay * self, GstElement * renderer,
 
       sink = gst_element_get_static_pad (self->post_colorspace, "sink");
       if (G_UNLIKELY (!sink)) {
-        GST_WARNING_OBJECT (self, "Can't get sink pad from " COLORSPACE);
+        GST_WARNING_OBJECT (self, "Can't get sink pad from %s", vfilter_name);
         gst_object_unref (src);
         return FALSE;
       }
 
       if (G_UNLIKELY (gst_pad_link (src, sink) != GST_PAD_LINK_OK)) {
-        GST_WARNING_OBJECT (self, "Can't link renderer with " COLORSPACE);
+        GST_WARNING_OBJECT (self, "Can't link renderer with %s", vfilter_name);
         gst_object_unref (src);
         gst_object_unref (sink);
         return FALSE;
@@ -897,7 +903,7 @@ _link_renderer (GstSubtitleOverlay * self, GstElement * renderer,
       gst_object_unref (sink);
 
       if (G_UNLIKELY (!_create_element (self, &self->pre_colorspace,
-                  COLORSPACE, NULL, "pre-colorspace", FALSE))) {
+                  vfilter_name, NULL, "pre-colorspace", FALSE))) {
         return FALSE;
       }
 
@@ -909,13 +915,13 @@ _link_renderer (GstSubtitleOverlay * self, GstElement * renderer,
 
       src = gst_element_get_static_pad (self->pre_colorspace, "src");
       if (G_UNLIKELY (!src)) {
-        GST_WARNING_OBJECT (self, "Can't get srcpad from " COLORSPACE);
+        GST_WARNING_OBJECT (self, "Can't get srcpad from %s", vfilter_name);
         gst_object_unref (sink);
         return FALSE;
       }
 
       if (G_UNLIKELY (gst_pad_link (src, sink) != GST_PAD_LINK_OK)) {
-        GST_WARNING_OBJECT (self, "Can't link " COLORSPACE " to renderer");
+        GST_WARNING_OBJECT (self, "Can't link %s to renderer", vfilter_name);
         gst_object_unref (src);
         gst_object_unref (sink);
         return FALSE;
@@ -926,7 +932,7 @@ _link_renderer (GstSubtitleOverlay * self, GstElement * renderer,
       /* Set src ghostpad target */
       src = gst_element_get_static_pad (self->post_colorspace, "src");
       if (G_UNLIKELY (!src)) {
-        GST_WARNING_OBJECT (self, "Can't get src pad from " COLORSPACE);
+        GST_WARNING_OBJECT (self, "Can't get src pad from %s", vfilter_name);
         return FALSE;
       }
     } else {

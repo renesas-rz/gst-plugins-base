@@ -38,6 +38,7 @@
 #include "gststreamsynchronizer.h"
 #include "gstplaysinkvideoconvert.h"
 #include "gstplaysinkaudioconvert.h"
+#include "gstfilterconfig.h"
 
 GST_DEBUG_CATEGORY_STATIC (gst_play_sink_debug);
 #define GST_CAT_DEFAULT gst_play_sink_debug
@@ -1524,17 +1525,20 @@ gen_video_deinterlace_chain (GstPlaySink * playsink)
   bin = GST_BIN_CAST (chain->chain.bin);
   gst_object_ref_sink (bin);
 
-  GST_DEBUG_OBJECT (playsink, "creating " COLORSPACE);
-  chain->conv = gst_element_factory_make (COLORSPACE, "vdconv");
+  GST_DEBUG_OBJECT (playsink, "creating %s", vfilter_name);
+  chain->conv = gst_element_factory_make (vfilter_name, "vdconv");
   if (chain->conv == NULL) {
-    post_missing_element_message (playsink, COLORSPACE);
+    post_missing_element_message (playsink, vfilter_name);
     GST_ELEMENT_WARNING (playsink, CORE, MISSING_PLUGIN,
         (_("Missing element '%s' - check your GStreamer installation."),
-            COLORSPACE), ("video rendering might fail"));
+            vfilter_name), ("video rendering might fail"));
   } else {
     gst_bin_add (bin, chain->conv);
     head = chain->conv;
     prev = chain->conv;
+    if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT (head)),
+        "dmabuf-use"))
+      g_object_set (G_OBJECT(head), "dmabuf-use", TRUE, NULL);
   }
 
   GST_DEBUG_OBJECT (playsink, "creating deinterlace");

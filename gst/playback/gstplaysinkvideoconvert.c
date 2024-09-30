@@ -25,6 +25,7 @@
 
 #include <gst/pbutils/pbutils.h>
 #include <glib/gi18n-lib.h>
+#include "gstfilterconfig.h"
 
 GST_DEBUG_CATEGORY_STATIC (gst_play_sink_video_convert_debug);
 #define GST_CAT_DEFAULT gst_play_sink_video_convert_debug
@@ -56,9 +57,13 @@ gst_play_sink_video_convert_add_conversion_elements (GstPlaySinkVideoConvert *
 
   if (self->use_converters) {
     el = gst_play_sink_convert_bin_add_conversion_element_factory (cbin,
-        COLORSPACE, "conv");
-    if (el)
+        vfilter_name, "conv");
+    if (el) {
       prev = el;
+      if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT (el)),
+          "dmabuf-use"))
+        g_object_set (G_OBJECT(el), "dmabuf-use", TRUE, NULL);
+    }
 
     el = gst_play_sink_convert_bin_add_conversion_element_factory (cbin,
         "videoscale", "scale");
@@ -85,14 +90,18 @@ gst_play_sink_video_convert_add_conversion_elements (GstPlaySinkVideoConvert *
     prev = el;
 
     el = gst_play_sink_convert_bin_add_conversion_element_factory (cbin,
-        COLORSPACE, "conv2");
+        vfilter_name, "conv2");
     if (prev) {
       if (!gst_element_link_pads_full (prev, "src", el, "sink",
               GST_PAD_LINK_CHECK_TEMPLATE_CAPS))
         goto link_failed;
     }
-    if (el)
+    if (el) {
       prev = el;
+      if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT (el)),
+          "dmabuf-use"))
+        g_object_set (G_OBJECT(el), "dmabuf-use", TRUE, NULL);
+    }
   }
 
   return TRUE;
