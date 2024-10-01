@@ -111,7 +111,7 @@ typedef GstGLSinkBinClass GstGLImageSinkBinClass;
 
 G_DEFINE_TYPE (GstGLImageSinkBin, gst_gl_image_sink_bin, GST_TYPE_GL_SINK_BIN);
 GST_ELEMENT_REGISTER_DEFINE_WITH_CODE (glimagesink, "glimagesink",
-    GST_RANK_SECONDARY, gst_gl_image_sink_bin_get_type (),
+    (GST_RANK_MARGINAL - 1), gst_gl_image_sink_bin_get_type (),
     gl_element_init (plugin));
 
 enum
