@@ -145,6 +145,7 @@ G_BEGIN_DECLS
  * @GST_VIDEO_FORMAT_NV12_16L32S: NV12 with 16x32 Y tiles and 16x16 UV tiles. (Since: 1.22)
  * @GST_VIDEO_FORMAT_NV12_8L128 : NV12 with 8x128 tiles in linear order (Since: 1.22)
  * @GST_VIDEO_FORMAT_NV12_10BE_8L128 : NV12 10bit big endian with 8x128 tiles in linear order (Since: 1.22)
+ * @GST_VIDEO_FORMAT_GRAY10_LE64: 10-bit grayscale, packed into 64bit words (4 bits padding)
  *
  * Enum value describing the most common video formats.
  *
@@ -400,6 +401,14 @@ typedef enum {
    * Since: 1.22
    */
   GST_VIDEO_FORMAT_NV12_10BE_8L128,
+  /**
+   * GST_VIDEO_FORMAT_GRAY10_LE64:
+   *
+   * Grayscale 10bit litle endian packed in 64-bit data (4 bits padding).
+   *
+   * Added by Renesas
+   */
+  GST_VIDEO_FORMAT_GRAY10_LE64,
 } GstVideoFormat;
 
 #define GST_VIDEO_MAX_PLANES 4
@@ -890,7 +899,7 @@ gconstpointer  gst_video_format_get_palette          (GstVideoFormat format, gsi
     "P010_10LE, NV12_10LE32, NV12_10LE40, P010_10BE, NV12_10BE_8L128, Y444, RGBP, GBR, BGRP, NV24, xBGR, BGRx, " \
     "xRGB, RGBx, BGR, IYU2, v308, RGB, Y42B, NV61, NV16, VYUY, UYVY, YVYU, YUY2, I420, " \
     "YV12, NV21, NV12, NV12_8L128, NV12_64Z32, NV12_4L4, NV12_32L32, NV12_16L32S, Y41B, IYU1, YVU9, YUV9, RGB16, " \
-    "BGR16, RGB15, BGR15, RGB8P, GRAY16_LE, GRAY16_BE, GRAY10_LE32, GRAY8 }"
+    "BGR16, RGB15, BGR15, RGB8P, GRAY16_LE, GRAY16_BE, GRAY10_LE32, GRAY8, GRAY10_LE64 }"
 #endif
 
 GST_VIDEO_API
