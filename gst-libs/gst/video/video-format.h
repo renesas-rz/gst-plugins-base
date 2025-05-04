@@ -118,6 +118,7 @@ G_BEGIN_DECLS
  * @GST_VIDEO_FORMAT_Y410: packed 4:4:4 YUV, 10 bits per channel(A-V-Y-U...) (Since: 1.16)
  * @GST_VIDEO_FORMAT_VUYA: packed 4:4:4 YUV with alpha channel (V0-U0-Y0-A0...) (Since: 1.16)
  * @GST_VIDEO_FORMAT_BGR10A2_LE: packed 4:4:4 RGB with alpha channel(B-G-R-A), 10 bits for R/G/B channel and MSB 2 bits for alpha channel (Since: 1.16)
+ * @GST_VIDEO_FORMAT_GRAY10_LE64: 10-bit grayscale, packed into 64bit words (4 bits padding)
  *
  * Enum value describing the most common video formats.
  *
@@ -211,6 +212,14 @@ typedef enum {
   GST_VIDEO_FORMAT_Y410,
   GST_VIDEO_FORMAT_VUYA,
   GST_VIDEO_FORMAT_BGR10A2_LE,
+  /**
+   * GST_VIDEO_FORMAT_GRAY10_LE64:
+   *
+   * Grayscale 10bit litle endian packed in 64-bit data (4 bits padding).
+   *
+   * Added by Renesas
+   */
+  GST_VIDEO_FORMAT_GRAY10_LE64,
 } GstVideoFormat;
 
 #define GST_VIDEO_MAX_PLANES 4
@@ -562,7 +571,7 @@ gconstpointer  gst_video_format_get_palette          (GstVideoFormat format, gsi
   "A420_10LE, A422_10BE, A422_10LE, A444_10BE, A444_10LE, NV61, P010_10BE, " \
   "P010_10LE, IYU2, VYUY, GBRA, GBRA_10BE, GBRA_10LE, BGR10A2_LE, GBR_12BE, GBR_12LE, " \
   "GBRA_12BE, GBRA_12LE, I420_12BE, I420_12LE, I422_12BE, I422_12LE, " \
-  "Y444_12BE, Y444_12LE, GRAY10_LE32, NV12_10LE32, NV16_10LE32, NV12_10LE40 }"
+  "Y444_12BE, Y444_12LE, GRAY10_LE32, NV12_10LE32, NV16_10LE32, NV12_10LE40, GRAY10_LE64 }"
 
 /**
  * GST_VIDEO_CAPS_MAKE:

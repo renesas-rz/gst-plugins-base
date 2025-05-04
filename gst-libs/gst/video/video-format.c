@@ -4787,6 +4787,84 @@ pack_GRAY10_LE32 (const GstVideoFormatInfo * info, GstVideoPackFlags flags,
   }
 }
 
+#define PACK_GRAY10_LE64 GST_VIDEO_FORMAT_AYUV64, unpack_GRAY10_LE64, 1, pack_GRAY10_LE64
+static void
+unpack_GRAY10_LE64 (const GstVideoFormatInfo * info, GstVideoPackFlags flags,
+    gpointer dest, const gpointer data[GST_VIDEO_MAX_PLANES],
+    const gint stride[GST_VIDEO_MAX_PLANES], gint x, gint y, gint width)
+{
+  gint i;
+  const guint64 *restrict sy = GET_PLANE_LINE (0, y);
+  guint16 *restrict d = dest;
+  gint num_words = (width + 5) / 6;
+
+  /* Y data is packed into little endian 64bit words, with the 4 MSB being
+   * padding.
+   * -> padding | Y1 | Y2 | Y3 | Y4 | Y5 | Y6
+   */
+
+  for (i = 0; i < num_words; i++) {
+    gint num_comps = MIN (6, width - i * 6);
+    guint pix = i * 6;
+    gsize doff = pix * 4;
+    gint c;
+    guint64 Y;
+
+    Y = GST_READ_UINT64_LE (sy + i);
+
+    for (c = 0; c < num_comps; c++) {
+      guint16 Yn;
+
+      /* For Y, we simply read 10 bit and shift it out */
+      Yn = (Y & 0x03ff) << 6;
+      Y >>= 10;
+
+      if (G_UNLIKELY (pix + c < x))
+        continue;
+
+      if (!(flags & GST_VIDEO_PACK_FLAG_TRUNCATE_RANGE))
+        Yn |= Yn >> 10;
+
+      d[doff + 0] = 0xffff;
+      d[doff + 1] = Yn;
+      d[doff + 2] = 0x8000;
+      d[doff + 3] = 0x8000;
+
+      doff += 4;
+    }
+  }
+}
+
+static void
+pack_GRAY10_LE64 (const GstVideoFormatInfo * info, GstVideoPackFlags flags,
+    const gpointer src, gint sstride, gpointer data[GST_VIDEO_MAX_PLANES],
+    const gint stride[GST_VIDEO_MAX_PLANES], GstVideoChromaSite chroma_site,
+    gint y, gint width)
+{
+  gint i;
+  guint64 *restrict dy = GET_PLANE_LINE (0, y);
+  const guint16 *restrict s = src;
+  gint num_words = (width + 5) / 6;
+
+  for (i = 0; i < num_words; i++) {
+    gint num_comps = MIN (6, width - i * 6);
+    guint pix = i * 6;
+    gsize soff = pix * 4;
+    gint c;
+    guint64 Y = 0;
+    guint64 ds = 0;
+
+    for (c = 0; c < num_comps; c++) {
+      ds = s[soff + 1] >> 6;
+      Y |= ds << (10 * c);
+
+      soff += 4;
+    }
+
+    GST_WRITE_UINT64_LE (dy + i, Y);
+  }
+}
+
 #define PACK_NV12_10LE32 GST_VIDEO_FORMAT_AYUV64, unpack_NV12_10LE32, 1, pack_NV12_10LE32
 static void
 unpack_NV12_10LE32 (const GstVideoFormatInfo * info, GstVideoPackFlags flags,
@@ -5670,6 +5748,8 @@ static const VideoFormat formats[] = {
   MAKE_RGBA_LE_PACK_FORMAT (BGR10A2_LE, "raw video", DPTH10_10_10_2, PSTR4444,
       PLANE0,
       OFFS0, SUB4444, PACK_BGR10A2_LE),
+  MAKE_GRAY_C_LE_FORMAT (GRAY10_LE64, "raw video", DPTH10, PSTR0, PLANE0, OFFS0,
+      SUB4, PACK_GRAY10_LE64),
 };
 
 static GstVideoFormat
