@@ -439,3 +439,45 @@ gst_buffer_pool_config_set_gl_allocation_params (GstStructure * config,
   gst_structure_set (config, "gl-allocation-params",
       GST_TYPE_GL_ALLOCATION_PARAMS, params, NULL);
 }
+
+void
+gst_buffer_pool_set_gl_alignment (GstVideoInfo * info, GstVideoAlignment * align)
+{
+  guint stride_align, n_planes, i;
+
+  gst_video_alignment_reset (align);
+  /* In dma-buffer, ARM Mali requires strict allocation alignment for each
+   * color format (NV12, NV21, YV12, IYUV, I420, IMC1, IMC2, IMC3, IMC4,
+   * P210, P010 require 16-byte alignment. Others require 64-byte alignment) */
+  switch (GST_VIDEO_FORMAT_INFO_FORMAT (info->finfo)) {
+    /* Currently, only NV12, NV21, YV12, I420, and P010 formats are supported
+     * by GStreamer version 1.22.12. Please add more if later versions provide
+     * additional support */
+    case GST_VIDEO_FORMAT_NV12:
+    case GST_VIDEO_FORMAT_NV21:
+    case GST_VIDEO_FORMAT_YV12:
+    case GST_VIDEO_FORMAT_I420:
+    case GST_VIDEO_FORMAT_P010_10LE:
+      stride_align = 15;
+      break;
+    default:
+      /* Other formats */
+      stride_align = 63;
+      break;
+  }
+
+  n_planes = info->finfo->n_planes;
+  for (i = 0; i < n_planes; i++) {
+    align->stride_align[i] = stride_align;
+  }
+
+  GST_DEBUG("padding top:%u, left:%u, right:%u, bottom:%u, "
+            "stride_align %d:%d:%d:%d",
+            align->padding_top, align->padding_left,
+            align->padding_right, align->padding_bottom,
+            align->stride_align[0], align->stride_align[1],
+            align->stride_align[2], align->stride_align[3]);
+
+  return;
+}
+
