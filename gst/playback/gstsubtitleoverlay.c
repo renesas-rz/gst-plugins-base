@@ -877,7 +877,7 @@ _link_renderer (GstSubtitleOverlay * self, GstElement * renderer,
     if (!is_hw) {
       /* First link everything internally */
       if (G_UNLIKELY (!_create_element (self, &self->post_colorspace,
-                  vfilter_name, NULL, "post-colorspace", FALSE))) {
+                  GST_VFILTER_NAME ("videoconvert"), NULL, "post-colorspace", FALSE))) {
         return FALSE;
       }
       src = gst_element_get_static_pad (renderer, "src");
@@ -888,13 +888,13 @@ _link_renderer (GstSubtitleOverlay * self, GstElement * renderer,
 
       sink = gst_element_get_static_pad (self->post_colorspace, "sink");
       if (G_UNLIKELY (!sink)) {
-        GST_WARNING_OBJECT (self, "Can't get sink pad from %s", vfilter_name);
+        GST_WARNING_OBJECT (self, "Can't get sink pad from %s", GST_VFILTER_NAME ("videoconvert"));
         gst_object_unref (src);
         return FALSE;
       }
 
       if (G_UNLIKELY (gst_pad_link (src, sink) != GST_PAD_LINK_OK)) {
-        GST_WARNING_OBJECT (self, "Can't link renderer with %s", vfilter_name);
+        GST_WARNING_OBJECT (self, "Can't link renderer with %s", GST_VFILTER_NAME ("videoconvert"));
         gst_object_unref (src);
         gst_object_unref (sink);
         return FALSE;
@@ -903,7 +903,7 @@ _link_renderer (GstSubtitleOverlay * self, GstElement * renderer,
       gst_object_unref (sink);
 
       if (G_UNLIKELY (!_create_element (self, &self->pre_colorspace,
-                  vfilter_name, NULL, "pre-colorspace", FALSE))) {
+                  GST_VFILTER_NAME ("videoconvert"), NULL, "pre-colorspace", FALSE))) {
         return FALSE;
       }
 
@@ -915,13 +915,13 @@ _link_renderer (GstSubtitleOverlay * self, GstElement * renderer,
 
       src = gst_element_get_static_pad (self->pre_colorspace, "src");
       if (G_UNLIKELY (!src)) {
-        GST_WARNING_OBJECT (self, "Can't get srcpad from %s", vfilter_name);
+        GST_WARNING_OBJECT (self, "Can't get srcpad from %s", GST_VFILTER_NAME ("videoconvert"));
         gst_object_unref (sink);
         return FALSE;
       }
 
       if (G_UNLIKELY (gst_pad_link (src, sink) != GST_PAD_LINK_OK)) {
-        GST_WARNING_OBJECT (self, "Can't link %s to renderer", vfilter_name);
+        GST_WARNING_OBJECT (self, "Can't link %s to renderer", GST_VFILTER_NAME ("videoconvert"));
         gst_object_unref (src);
         gst_object_unref (sink);
         return FALSE;
@@ -932,7 +932,7 @@ _link_renderer (GstSubtitleOverlay * self, GstElement * renderer,
       /* Set src ghostpad target */
       src = gst_element_get_static_pad (self->post_colorspace, "src");
       if (G_UNLIKELY (!src)) {
-        GST_WARNING_OBJECT (self, "Can't get src pad from %s", vfilter_name);
+        GST_WARNING_OBJECT (self, "Can't get src pad from %s", GST_VFILTER_NAME ("videoconvert"));
         return FALSE;
       }
     } else {

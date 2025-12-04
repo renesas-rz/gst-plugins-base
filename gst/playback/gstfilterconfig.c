@@ -26,8 +26,10 @@ void gst_filter_get_vfilter_config_file ()
       goto exit;
     }
   };
+  
 skip_config:
-  vfilter_name = COLORSPACE;
+  vfilter_name = "default";
 exit:
-  fclose(fp);
+  if (fp)
+    fclose(fp);
 }

@@ -1524,14 +1524,13 @@ gen_video_deinterlace_chain (GstPlaySink * playsink)
   chain->chain.bin = gst_bin_new ("vdbin");
   bin = GST_BIN_CAST (chain->chain.bin);
   gst_object_ref_sink (bin);
-
-  GST_DEBUG_OBJECT (playsink, "creating %s", vfilter_name);
-  chain->conv = gst_element_factory_make (vfilter_name, "vdconv");
+  GST_DEBUG_OBJECT (playsink, "creating %s", GST_VFILTER_NAME ("videoconvert"));
+  chain->conv = gst_element_factory_make (GST_VFILTER_NAME ("videoconvert"), "vdconv");
   if (chain->conv == NULL) {
-    post_missing_element_message (playsink, vfilter_name);
+    post_missing_element_message (playsink, GST_VFILTER_NAME ("videoconvert"));
     GST_ELEMENT_WARNING (playsink, CORE, MISSING_PLUGIN,
         (_("Missing element '%s' - check your GStreamer installation."),
-            vfilter_name), ("video rendering might fail"));
+            GST_VFILTER_NAME ("videoconvert")), ("video rendering might fail"));
   } else {
     gst_bin_add (bin, chain->conv);
     head = chain->conv;
@@ -1878,16 +1877,19 @@ gen_video_chain (GstPlaySink * playsink, gboolean raw, gboolean async)
     } else {
       GST_DEBUG_OBJECT (playsink, "adding video filter");
       chain->filter_conv =
-          gst_element_factory_make ("videoconvert", "filter-convert");
+          gst_element_factory_make (GST_VFILTER_NAME ("videoconvert"), "filter-convert");
       if (!chain->filter_conv) {
-        post_missing_element_message (playsink, "videoconvert");
+        post_missing_element_message (playsink, GST_VFILTER_NAME ("videoconvert"));
         GST_ELEMENT_WARNING (playsink, CORE, MISSING_PLUGIN,
             (_("Missing element '%s' - check your GStreamer installation."),
-                "videoconvert"),
+                GST_VFILTER_NAME ("videoconvert")),
             ("video playback and visualizations might not work"));
       } else {
         gst_bin_add (bin, chain->filter_conv);
         head = prev = chain->filter_conv;
+        if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT (head)),
+            "dmabuf-use"))
+          g_object_set (G_OBJECT(head), "dmabuf-use", TRUE, NULL);
       }
 
       gst_bin_add (bin, chain->filter);

@@ -57,7 +57,7 @@ gst_play_sink_video_convert_add_conversion_elements (GstPlaySinkVideoConvert *
 
   if (self->use_converters) {
     el = gst_play_sink_convert_bin_add_conversion_element_factory (cbin,
-        vfilter_name, "conv");
+        GST_VFILTER_NAME ("videoconvert"), "conv");
     if (el) {
       prev = el;
       if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT (el)),
@@ -65,11 +65,19 @@ gst_play_sink_video_convert_add_conversion_elements (GstPlaySinkVideoConvert *
         g_object_set (G_OBJECT(el), "dmabuf-use", TRUE, NULL);
     }
 
-    el = gst_play_sink_convert_bin_add_conversion_element_factory (cbin,
-        "videoscale", "scale");
+    el = gst_play_sink_convert_bin_add_conversion_element_factory (cbin, 
+        GST_VFILTER_NAME ("videoscale"), "scale");
+
     if (el) {
-      /* Add black borders if necessary to keep the DAR */
-      g_object_set (el, "add-borders", TRUE, NULL);
+      if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT (el)),
+          "dmabuf-use")) {
+        g_object_set (G_OBJECT(el), "dmabuf-use", TRUE, NULL);
+      }
+      if (g_object_class_find_property (G_OBJECT_GET_CLASS (G_OBJECT (el)),
+          "add-borders")) {
+        /* Add black borders if necessary to keep the DAR */
+        g_object_set (G_OBJECT(el), "add-borders", TRUE, NULL);
+      }
       if (prev) {
         if (!gst_element_link_pads_full (prev, "src", el, "sink",
                 GST_PAD_LINK_CHECK_TEMPLATE_CAPS))
@@ -90,7 +98,7 @@ gst_play_sink_video_convert_add_conversion_elements (GstPlaySinkVideoConvert *
     prev = el;
 
     el = gst_play_sink_convert_bin_add_conversion_element_factory (cbin,
-        vfilter_name, "conv2");
+        GST_VFILTER_NAME ("videoconvert"), "conv2");
     if (prev) {
       if (!gst_element_link_pads_full (prev, "src", el, "sink",
               GST_PAD_LINK_CHECK_TEMPLATE_CAPS))
