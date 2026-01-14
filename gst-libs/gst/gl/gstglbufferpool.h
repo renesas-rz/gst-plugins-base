@@ -74,6 +74,9 @@ GstGLAllocationParams * gst_buffer_pool_config_get_gl_allocation_params    (GstS
 GST_GL_API
 void                    gst_buffer_pool_config_set_gl_allocation_params    (GstStructure * config,
                                                                             GstGLAllocationParams * params);
+GST_GL_API
+void                    gst_buffer_pool_set_gl_alignment                   (GstVideoInfo * info,
+                                                                            GstVideoAlignment * align);
 
 G_END_DECLS
 

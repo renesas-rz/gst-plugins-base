@@ -326,6 +326,7 @@ _gl_memory_upload_propose_allocation (gpointer impl, GstQuery * decide_query,
   guint n_pools, i;
   GstCaps *caps;
   GstCapsFeatures *features;
+  GstVideoAlignment valign;
 
   gst_query_parse_allocation (query, &caps, NULL);
   if (caps == NULL)
@@ -393,6 +394,10 @@ _gl_memory_upload_propose_allocation (gpointer impl, GstQuery * decide_query,
           gst_gl_texture_target_to_buffer_pool_option (target);
       gst_buffer_pool_config_add_option (config, target_pool_option_str);
     }
+    gst_buffer_pool_set_gl_alignment(&info, &valign);
+    gst_buffer_pool_config_set_video_alignment (config, &valign);
+    gst_buffer_pool_config_add_option (config,
+        GST_BUFFER_POOL_OPTION_VIDEO_ALIGNMENT);
 
     if (!gst_buffer_pool_set_config (pool, config)) {
       gst_object_unref (pool);
